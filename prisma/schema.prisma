@@ -1,0 +1,95 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model RegionState {
+  region          String @id // 'Addis Ababa' | 'Hawassa' | 'Dire Dawa'
+  totalCapacity   Int
+  medicalSupplies Int
+  electronics     Int
+  securedDocs     Int
+}
+
+model Courier {
+  id                String   @id // e.g. "CR-001"
+  name              String
+  phone             String
+  status            String   // "Idle" | "Dispatched" | "Suspended"
+  assignedManifests String[]
+  documentUrl       String?
+  signatureUrl      String?
+  rating            Float
+  joinedDate        String
+  commissionEarned  Float    // ETB
+}
+
+model Manifest {
+  trackingCode      String   @id // e.g. "ET-BOL-902"
+  destination       String   // "Bole Zone", "Mercato Zone", "Kazanchis Zone"
+  type              String   // "Medical Supplies", "High-Value Electronics", etc.
+  weight            Float    // kg
+  units             Int
+  status            String   // "Allocated", "In Transit", "Awaiting Dispatch", etc.
+  assignedCourierId String?
+  priority          String   // "Standard" | "Expedited"
+  departureTime     String?
+  createdDate       String
+  transitOrigin     String?  // 'Dubai' | 'China' | 'Dire Dawa' | 'Other'
+  localAddress      String?
+  cargoPhotoUrl     String?
+}
+
+model Incident {
+  id               String @id // e.g. "INC-101"
+  trackingCode     String
+  courierId        String
+  courierName      String
+  type             String // "Damaged Cargo" | "Missing Documents"
+  description      String
+  status           String // "Pending" | "Resolved"
+  date             String
+  financialPenalty Float  // ETB
+}
+
+model Ledger {
+  id                    String @id @default("main")
+  baseCashETB           Float
+  pendingCommissionsETB Float
+  supplierClearingETB   Float
+}
+
+model LedgerHistory {
+  id          String @id // e.g. "LDG-001"
+  date        String
+  type        String // "Release Manifest", "Commission Disbursed", etc.
+  amount      Float  // ETB
+  description String
+}
+
+model RestockTicket {
+  id     String @id // e.g. "RST-001"
+  type   String
+  qty    Int
+  status String // "Pending" | "Approved"
+}
+
+model ChatMessage {
+  id     String @id
+  sender String
+  avatar String
+  msg    String
+  time   String
+  role   String // 'agent' | 'dispatcher' | 'system'
+}
+
+model SystemSettings {
+  id             String  @id @default("settings")
+  dispatcherMode String  // "centralized" | "merchant-direct"
+  soundEnabled   Boolean
+  currentRegion  String  // "Addis Ababa"
+}
